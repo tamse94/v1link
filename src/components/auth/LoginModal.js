@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
 export default function LoginModal({ onLoginSuccess }) {
@@ -7,6 +7,16 @@ export default function LoginModal({ onLoginSuccess }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [siteName, setSiteName] = useState('V1Link'); // Default sementara
+
+  // Ambil nama situs dari database pas form login muncul
+  useEffect(() => {
+    async function fetchSettings() {
+      const { data } = await supabase.from('settings').select('site_name').eq('id', 1).single();
+      if (data && data.site_name) setSiteName(data.site_name);
+    }
+    fetchSettings();
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -40,14 +50,14 @@ export default function LoginModal({ onLoginSuccess }) {
   };
 
   return (
+    // Fixed tanpa background dari wrapper ini karena efek blurnya udah diatur di AuthWrapper
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-      {/* BACKDROP: Transparan + Blur (Bikin halaman belakang tetep kelihatan dikit) */}
-      <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-xl animate-none"></div>
+      {/* Backdrop semi transparan untuk memperkuat efek gelap */}
+      <div className="absolute inset-0 bg-slate-950/60 animate-in fade-in duration-500"></div>
 
-      {/* MODAL CARD: Glassmorphism Style */}
-      <div className="relative w-full max-w-[380px] bg-slate-900/80 border border-white/10 backdrop-blur-2xl rounded-[2rem] p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)] animate-in fade-in zoom-in duration-300">
+      {/* MODAL CARD */}
+      <div className="relative w-full max-w-[380px] bg-slate-900/80 border border-white/10 backdrop-blur-2xl rounded-[2rem] p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)] animate-in fade-in zoom-in duration-500">
         
-        {/* Glow Effect di belakang icon */}
         <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 bg-blue-500/20 blur-2xl rounded-full"></div>
 
         <div className="text-center mb-8 relative">
@@ -101,8 +111,9 @@ export default function LoginModal({ onLoginSuccess }) {
           </button>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-white/5 flex justify-center">
-           <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em]">&copy; V1Link Core System</p>
+        <div className="mt-8 pt-6 border-t border-white/5 flex justify-center text-center">
+           {/* TEXT DINAMIS SESUAI SITE NAME DI PENGATURAN */}
+           <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em]">&copy; {siteName} CORE SYSTEM</p>
         </div>
       </div>
     </div>
