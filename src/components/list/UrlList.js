@@ -150,7 +150,7 @@ export default function UrlList() {
                     <td className="py-3 px-6">
                       <div className="max-w-[180px] sm:max-w-[250px]">
                         <p className="text-white font-semibold truncate">{u.title || 'Tanpa Judul'}</p>
-                        <a href={`/${u.short_code}`} target="_blank" rel="noreferrer" className="text-blue-400 hover:text-blue-300 text-xs truncate block mt-0.5">v1link.vercel.app/{u.short_code}</a>
+                        <a href={`/${u.short_code}`} target="_blank" rel="noreferrer" className="text-blue-400 hover:text-blue-300 text-xs truncate block mt-0.5">xydntvdsg.eu.org/{u.short_code}</a>
                       </div>
                     </td>
                     <td className="py-3 px-6 text-slate-400 text-sm">{new Date(u.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
