@@ -3,7 +3,10 @@ import { notFound } from 'next/navigation';
 
 export default async function ShortcodePage({ params }) {
   const { shortcode } = params;
-  const userAgent = (await import('next/headers')).headers().get('user-agent') || '';
+  
+  // Ambil user-agent dari header untuk mendeteksi siapa yang mengakses
+  const headersList = (await import('next/headers')).headers();
+  const userAgent = headersList.get('user-agent') || '';
 
   const [urlData, settingsData] = await Promise.all([
     supabase.from('urls').select('id, original_url, clicks').eq('short_code', shortcode).single(),
@@ -15,14 +18,19 @@ export default async function ShortcodePage({ params }) {
   const { original_url, id, clicks } = urlData.data;
   const settings = settingsData.data || {};
 
-  // ANTI-BOT LOGIC
-  const isBot = /bot|googlebot|crawler|spider|robot|crawling/i.test(userAgent);
+  // PENDETEKSI BOT KOMPLIT (Termasuk FB, WA, Telegram, Twitter, Google)
+  const isBot = /bot|crawler|spider|crawling|facebookexternalhit|whatsapp|telegrambot|twitterbot/i.test(userAgent);
+
+  // LOGIKA ANTI-BOT (Blokir akses jika fitur dinyalakan dan yang datang adalah bot/crawler)
   if (settings.anti_bot_enabled && isBot) {
-    // Jika bot, jangan tampilkan apa-apa atau lari ke 404
     notFound();
   }
 
-  await supabase.from('urls').update({ clicks: (clicks || 0) + 1 }).eq('id', id);
+  // UPDATE HITCOUNT: HANYA JIKA BUKAN BOT
+  // Bot sosmed boleh baca halaman buat thumbnail, tapi nggak bakal ditambahkan ke angka klik!
+  if (!isBot) {
+    await supabase.from('urls').update({ clicks: (clicks || 0) + 1 }).eq('id', id);
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white px-4">
