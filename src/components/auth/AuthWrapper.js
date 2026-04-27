@@ -16,9 +16,15 @@ export default function AuthWrapper({ children }) {
 
   if (checking) return null; 
 
-  if (!isLoggedIn) {
-    return <LoginModal onLoginSuccess={() => setIsLoggedIn(true)} />;
-  }
+  return (
+    <>
+      {/* KONTEN UTAMA: Kalau belum login, dibikin blur, agak transparan, dan gak bisa diklik */}
+      <div className={`transition-all duration-700 ${!isLoggedIn ? 'blur-md opacity-30 pointer-events-none select-none' : ''}`}>
+        {children}
+      </div>
 
-  return <>{children}</>;
+      {/* POPUP LOGIN: Muncul menimpa di atasnya */}
+      {!isLoggedIn && <LoginModal onLoginSuccess={() => setIsLoggedIn(true)} />}
+    </>
+  );
 }
