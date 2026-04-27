@@ -17,13 +17,10 @@ export default function ShortenerForm() {
 
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
-  
-  // State baru buat nampilin hasil link setelah sukses
   const [shortUrlResult, setShortUrlResult] = useState('');
 
   const showNotif = (msg, type) => setToast({ message: msg, type });
 
-  // Fungsi Copy text
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(shortUrlResult);
@@ -46,7 +43,7 @@ export default function ShortenerForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setShortUrlResult(''); // reset result
+    setShortUrlResult('');
     try {
       const uploadedImgUrl = await uploadToCloudinary();
       const shortCode = generateShortCode();
@@ -60,7 +57,6 @@ export default function ShortenerForm() {
 
       if (error) throw error;
       
-      // Bikin full URL-nya buat ditampilin (asumsi domain vercel lu)
       const fullShortUrl = `${window.location.origin}/${shortCode}`;
       setShortUrlResult(fullShortUrl);
       
@@ -74,64 +70,83 @@ export default function ShortenerForm() {
   };
 
   return (
-    <div className="w-full max-w-xs sm:max-w-sm md:max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto">
+    <div className="w-full max-w-4xl mx-auto mt-6 sm:mt-10 mb-20 px-4 sm:px-0">
       
-      <div className="bg-slate-900 border border-slate-800 rounded-xl sm:rounded-2xl md:rounded-3xl lg:rounded-[2rem] p-4 sm:p-6 md:p-8 lg:p-12 shadow-[0_0_40px_-15px_rgba(59,130,246,0.2)]">
+      {/* Container Utama - Lebar dan Lega */}
+      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-10 md:p-12 shadow-2xl">
         
-        <div className="text-center mb-6 sm:mb-8 md:mb-10 lg:mb-12">
-          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-black text-white mb-2 sm:mb-3 md:mb-4 lg:mb-5 tracking-tight">Perpendek URL Lu Disini</h2>
-          <p className="text-xs sm:text-sm md:text-base lg:text-lg text-slate-400 font-medium">Bikin link lebih rapi, gampang di-share, lengkap sama custom thumbnail.</p>
+        <div className="text-center mb-10">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">Perpendek URL Lu Disini</h2>
+          <p className="text-slate-400 font-medium text-base sm:text-lg max-w-2xl mx-auto">
+            Bikin link lu lebih rapi, profesional, dan gampang di-share. Lengkap dengan pengaturan Custom Thumbnail.
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 md:space-y-8 lg:space-y-10">
+        <form onSubmit={handleSubmit} className="space-y-8">
           
-          {/* Input URL */}
+          {/* Input URL Tujuan */}
           <div className="relative group">
-            <span className="absolute left-3 sm:left-4 md:left-5 lg:left-6 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-500 group-focus-within:text-blue-500 transition-colors text-lg sm:text-xl md:text-2xl lg:text-3xl">public</span>
-            <input type="url" required value={url} onChange={e => setUrl(e.target.value)} 
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg sm:rounded-xl md:rounded-2xl lg:rounded-3xl py-3 sm:py-4 md:py-5 lg:py-6 pl-10 sm:pl-12 md:pl-14 lg:pl-16 pr-3 sm:pr-4 md:pr-5 lg:pr-6 text-xs sm:text-sm md:text-base lg:text-lg text-white font-medium focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all placeholder:text-slate-600" 
-              placeholder="Masukkan link panjang lu di sini..." />
-          </div>
-
-          {/* Input SEO */}
-          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 md:gap-8 lg:gap-10">
-            <div className="w-full sm:w-1/2 relative group">
-              <span className="absolute left-3 sm:left-4 md:left-5 lg:left-6 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-500 group-focus-within:text-blue-500 transition-colors text-lg sm:text-xl md:text-2xl lg:text-3xl">title</span>
-              <input type="text" value={title} onChange={e => setTitle(e.target.value)} 
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg sm:rounded-xl md:rounded-2xl lg:rounded-3xl py-3 sm:py-4 md:py-5 lg:py-6 pl-10 sm:pl-12 md:pl-14 lg:pl-16 pr-3 sm:pr-4 md:pr-5 lg:pr-6 text-xs sm:text-sm md:text-base lg:text-lg text-white font-medium focus:border-blue-500 outline-none transition-all placeholder:text-slate-600" 
-                placeholder="Judul SEO (Opsional)" />
-            </div>
-            <div className="w-full sm:w-1/2 relative group">
-              <span className="absolute left-3 sm:left-4 md:left-5 lg:left-6 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-500 group-focus-within:text-blue-500 transition-colors text-lg sm:text-xl md:text-2xl lg:text-3xl">description</span>
-              <input type="text" value={desc} onChange={e => setDesc(e.target.value)} 
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg sm:rounded-xl md:rounded-2xl lg:rounded-3xl py-3 sm:py-4 md:py-5 lg:py-6 pl-10 sm:pl-12 md:pl-14 lg:pl-16 pr-3 sm:pr-4 md:pr-5 lg:pr-6 text-xs sm:text-sm md:text-base lg:text-lg text-white font-medium focus:border-blue-500 outline-none transition-all placeholder:text-slate-600" 
-                placeholder="Deskripsi (Opsional)" />
+            <label className="block text-sm font-bold text-slate-300 mb-2">URL Tujuan (Wajib)</label>
+            <div className="relative">
+              <span className="absolute left-5 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-500 group-focus-within:text-blue-500 transition-colors text-2xl">public</span>
+              <input type="url" required value={url} onChange={e => setUrl(e.target.value)} 
+                className="w-full bg-slate-950 border border-slate-700 rounded-2xl py-4 pl-14 pr-6 text-lg text-white font-medium focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all placeholder:text-slate-600" 
+                placeholder="https://link-panjang-banget.com/..." />
             </div>
           </div>
 
-          <ImageUploader file={file} setFile={setFile} previewUrl={previewUrl} setPreviewUrl={setPreviewUrl} mode={mode} setMode={setMode} isBlur={isBlur} setIsBlur={setIsBlur} showPlay={showPlay} setShowPlay={setShowPlay} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Input Judul SEO */}
+            <div className="relative group">
+              <label className="block text-sm font-bold text-slate-300 mb-2">Judul Link (Opsional)</label>
+              <div className="relative">
+                <span className="absolute left-5 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-500 group-focus-within:text-blue-500 transition-colors text-2xl">title</span>
+                <input type="text" value={title} onChange={e => setTitle(e.target.value)} 
+                  className="w-full bg-slate-950 border border-slate-700 rounded-2xl py-4 pl-14 pr-6 text-base text-white font-medium focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all placeholder:text-slate-600" 
+                  placeholder="Contoh: Video Viral 2026" />
+              </div>
+            </div>
 
-          <button type="submit" disabled={loading} className="w-full relative overflow-hidden group bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl py-3 sm:py-4 md:py-5 lg:py-6 xl:py-7 rounded-lg sm:rounded-xl md:rounded-2xl lg:rounded-3xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_-5px_rgba(37,99,235,0.5)] hover:shadow-[0_0_25px_-5px_rgba(59,130,246,0.6)]">
-            <span className="flex justify-center items-center gap-2 sm:gap-3 md:gap-4 relative z-10">
+            {/* Input Deskripsi - Berubah jadi TEXTAREA biar lega */}
+            <div className="relative group">
+              <label className="block text-sm font-bold text-slate-300 mb-2">Deskripsi Link (Opsional)</label>
+              <div className="relative">
+                <span className="absolute left-5 top-5 material-symbols-outlined text-slate-500 group-focus-within:text-blue-500 transition-colors text-2xl">description</span>
+                <textarea value={desc} onChange={e => setDesc(e.target.value)} rows="3"
+                  className="w-full bg-slate-950 border border-slate-700 rounded-2xl py-4 pl-14 pr-6 text-base text-white font-medium focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all placeholder:text-slate-600 resize-none" 
+                  placeholder="Ketik deskripsi singkat buat nampil di Sosmed..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          {/* Area Upload Thumbnail */}
+          <div className="pt-4 border-t border-slate-800">
+            <label className="block text-sm font-bold text-slate-300 mb-4">Pengaturan Thumbnail</label>
+            <ImageUploader file={file} setFile={setFile} previewUrl={previewUrl} setPreviewUrl={setPreviewUrl} mode={mode} setMode={setMode} isBlur={isBlur} setIsBlur={setIsBlur} showPlay={showPlay} setShowPlay={setShowPlay} />
+          </div>
+
+          {/* Tombol Submit Besar */}
+          <button type="submit" disabled={loading} className="w-full relative overflow-hidden bg-blue-600 hover:bg-blue-500 text-white font-black text-xl py-5 rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed mt-4">
+            <span className="flex justify-center items-center gap-3 relative z-10">
               {loading ? (
-                <><span className="material-symbols-outlined animate-spin text-lg sm:text-xl md:text-2xl lg:text-3xl">progress_activity</span> Memproses...</>
+                <><span className="material-symbols-outlined animate-spin text-3xl">progress_activity</span> Sedang Memproses...</>
               ) : (
-                <><span className="material-symbols-outlined text-lg sm:text-xl md:text-2xl lg:text-3xl">rocket_launch</span> Generate Short URL</>
+                <><span className="material-symbols-outlined text-3xl">rocket_launch</span> Bikin Link Sekarang</>
               )}
             </span>
           </button>
         </form>
 
-        {/* AREA HASIL (Muncul pas sukses aja) */}
+        {/* AREA HASIL - Desain Elegan */}
         {shortUrlResult && (
-          <div className="mt-6 sm:mt-8 md:mt-10 lg:mt-12 p-1 sm:p-1.5 md:p-2 lg:p-3 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg sm:rounded-xl md:rounded-2xl lg:rounded-3xl animate-[fadeIn_0.5s_ease-out]">
-            <div className="bg-slate-950 rounded-md sm:rounded-lg md:rounded-xl lg:rounded-2xl p-4 sm:p-5 md:p-6 lg:p-8 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-              <div className="flex flex-col flex-grow w-full text-center sm:text-left overflow-hidden">
-                <span className="text-[10px] sm:text-xs md:text-sm lg:text-base text-slate-400 font-medium mb-1 sm:mb-2 uppercase tracking-wider">Link Berhasil Dibuat!</span>
-                <span className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-white font-bold truncate select-all">{shortUrlResult}</span>
+          <div className="mt-10 p-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600 rounded-3xl animate-[fadeIn_0.5s_ease-out]">
+            <div className="bg-slate-950 rounded-[22px] p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="flex flex-col text-center md:text-left w-full overflow-hidden">
+                <span className="text-sm text-slate-400 font-bold uppercase tracking-widest mb-2">Link Sukses Dibuat!</span>
+                <span className="text-xl sm:text-2xl md:text-3xl text-white font-black truncate select-all">{shortUrlResult}</span>
               </div>
-              <button onClick={handleCopy} className="w-full sm:w-auto flex-shrink-0 flex items-center justify-center gap-1 sm:gap-2 bg-slate-800 hover:bg-slate-700 text-blue-400 hover:text-blue-300 font-bold py-2 sm:py-3 md:py-4 lg:py-5 px-4 sm:px-6 md:px-8 lg:px-10 rounded-md sm:rounded-lg md:rounded-xl lg:rounded-2xl transition-all border border-slate-700 hover:border-slate-600 text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl">
-                <span className="material-symbols-outlined text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl">content_copy</span>
+              <button onClick={handleCopy} className="w-full md:w-auto flex-shrink-0 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 px-8 rounded-xl transition-all shadow-lg">
+                <span className="material-symbols-outlined text-2xl">content_copy</span>
                 Salin Link
               </button>
             </div>
