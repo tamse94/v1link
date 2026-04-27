@@ -3,6 +3,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import ToastNotif from '@/components/ui/ToastNotif';
 
+// Komponen mini agar jika URL Cloudinary error, tidak menampilkan icon gambar pecah
+const SafeImage = ({ src }) => {
+  const [error, setError] = useState(false);
+  if (!src || error) return <span className="material-symbols-outlined text-slate-600">broken_image</span>;
+  return <img src={src} alt="thumb" className="w-full h-full object-cover" onError={() => setError(true)} />;
+};
+
 export default function UrlList() {
   const [urls, setUrls] = useState([]);
   const [totalLinks, setTotalLinks] = useState(0);
@@ -95,22 +102,22 @@ export default function UrlList() {
   return (
     <div className="w-full relative">
       
-      {/* Area Statistik dengan Icon */}
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-        <div className="flex gap-4 w-full sm:w-auto">
-          <div className="bg-slate-900 border border-slate-800 rounded-lg py-3 px-5 flex-1 flex flex-col items-center justify-center shadow-md">
-            <span className="material-symbols-outlined text-slate-500 mb-1">link</span>
-            <span className="block text-xs text-slate-400 font-semibold uppercase">Total Link</span>
-            <span className="text-xl font-bold text-blue-400">{totalLinks}</span>
-          </div>
-          <div className="bg-slate-900 border border-slate-800 rounded-lg py-3 px-5 flex-1 flex flex-col items-center justify-center shadow-md">
-            <span className="material-symbols-outlined text-slate-500 mb-1">touch_app</span>
-            <span className="block text-xs text-slate-400 font-semibold uppercase">Hitcount</span>
-            <span className="text-xl font-bold text-green-400">{totalClicks}</span>
-          </div>
+      {/* Tataletak Statistik (Dibuat Grid agar rapi dan presisi di Mobile & Desktop) */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col items-center justify-center shadow-sm">
+          <span className="material-symbols-outlined text-slate-500 mb-1 text-xl">link</span>
+          <span className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Total Link</span>
+          <span className="text-xl sm:text-2xl font-black text-blue-400">{totalLinks}</span>
         </div>
-        <button onClick={fetchData} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2.5 rounded-lg transition-colors text-sm font-semibold">
-          <span className="material-symbols-outlined text-lg">refresh</span> Refresh
+        
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col items-center justify-center shadow-sm">
+          <span className="material-symbols-outlined text-slate-500 mb-1 text-xl">touch_app</span>
+          <span className="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Hitcount</span>
+          <span className="text-xl sm:text-2xl font-black text-green-400">{totalClicks}</span>
+        </div>
+
+        <button onClick={fetchData} className="col-span-2 sm:col-span-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white rounded-xl flex items-center justify-center gap-2 transition-colors py-3 sm:py-0 shadow-sm">
+          <span className="material-symbols-outlined text-lg">refresh</span> <span className="font-semibold text-sm">Refresh Data</span>
         </button>
       </div>
 
@@ -137,7 +144,7 @@ export default function UrlList() {
                   <tr key={u.id} className="hover:bg-slate-800/30 transition-colors">
                     <td className="py-3 px-6">
                       <div className="w-12 h-12 bg-slate-950 rounded border border-slate-700 overflow-hidden flex items-center justify-center">
-                        {u.thumbnail_url ? <img src={u.thumbnail_url} alt="thumb" className="w-full h-full object-cover" /> : <span className="material-symbols-outlined text-slate-600">image</span>}
+                        <SafeImage src={u.thumbnail_url} />
                       </div>
                     </td>
                     <td className="py-3 px-6">
