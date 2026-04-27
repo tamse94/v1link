@@ -1,9 +1,22 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { supabase } from '@/lib/supabase';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [siteName, setSiteName] = useState('V1Link'); // Default nama sebelum loading selesai
+
+  // Narik nama situs dari database setting
+  useEffect(() => {
+    async function fetchSiteName() {
+      const { data } = await supabase.from('settings').select('site_name').eq('id', 1).single();
+      if (data && data.site_name) {
+        setSiteName(data.site_name);
+      }
+    }
+    fetchSiteName();
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 w-full bg-slate-950/95 backdrop-blur-md border-b border-slate-800 shadow-sm">
@@ -11,7 +24,8 @@ export default function Header() {
         
         <Link href="/" className="flex items-center gap-2">
           <span className="material-symbols-outlined text-blue-500 text-2xl">link</span>
-          <span className="text-xl font-bold text-white tracking-wide">V1Link</span>
+          {/* NAMA SITUS DINAMIS DARI SETTING */}
+          <span className="text-xl font-bold text-white tracking-wide">{siteName}</span>
         </Link>
 
         {/* Tombol Hamburger (Hanya tampil di HP) */}
