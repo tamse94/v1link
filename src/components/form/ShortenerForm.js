@@ -47,23 +47,23 @@ export default function ShortenerForm() {
     try {
       let uploadedImgUrl = await uploadToCloudinary();
       
-      // LOGIKA CLOUDINARY YANG BENER (Kaya project semalem)
+      // PERBAIKAN FATAL: Logika URL Cloudinary Mode 2 yang benar
       if (uploadedImgUrl && mode === 2) {
         const urlParts = uploadedImgUrl.split('/upload/');
         let transformations = [];
         
-        // 1. Bikin padding 16:9 dengan background blur dari gambar asli
+        // 1. Efek Blur Background (Bikin aspek rasio 16:9 yang aman)
         if (isBlur) {
-          transformations.push('c_pad,w_1280,h_720,b_blurred:400');
+          transformations.push('w_1280,h_720,c_pad,b_blurred:400');
         }
         
-        // 2. Tumpuk (overlay) icon Play warna putih di tengah
+        // 2. Efek Icon Play di tengah
         if (showPlay) {
-          // Menggunakan Arial font ukuran 150, symbol play button (▶)
           transformations.push('l_text:Arial_150:%E2%96%B6,co_white/fl_layer_apply');
         }
         
         if (transformations.length > 0) {
+          // Rakit kembali URL-nya dengan transformasi yang sah
           uploadedImgUrl = `${urlParts[0]}/upload/${transformations.join('/')}/${urlParts[1]}`;
         }
       }
