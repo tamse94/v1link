@@ -1,31 +1,55 @@
 import { supabase } from '@/lib/supabase';
 
-// Eksekusi Meta Tag di level Layout
 export async function generateMetadata({ params }) {
   const { shortcode } = params;
-  const { data } = await supabase.from('urls').select('title, description, thumbnail_url').eq('short_code', shortcode).single();
   
-  if (!data) return { title: 'Tidak Ditemukan' };
+  // Ambil data URL dan Pengaturan (Settings) secara bersamaan biar loadingnya cepet
+  const [urlRes, settingsRes] = await Promise.all([
+    supabase.from('urls').select('title, description, thumbnail_url').eq('short_code', shortcode).single(),
+    supabase.from('settings').select('site_name').eq('id', 1).single()
+  ]);
+  
+  const urlData = urlRes.data;
+  // Ambil nama situs dari pengaturan, kalau kosong defaultnya 'V1Link'
+  const siteName = settingsRes.data?.site_name || 'V1Link'; 
+  
+  if (!urlData) return { title: 'Page Not Found' };
+  
+  // LOGIKA KOMBINASI (BAHASA INGGRIS)
+  // Kalau title/deskripsi diisi, pakai yang diisi. Kalau kosong, pakai fallback bahasa Inggris + Nama Situs
+  const finalTitle = urlData.title 
+    ? urlData.title 
+    : `Shared Link | ${siteName}`;
+    
+  const finalDesc = urlData.description 
+    ? urlData.description 
+    : `Check out this exclusive link shared via ${siteName}. Click to view more details and content.`;
   
   return {
-    title: data.title || 'Tautan V1Link',
-    description: data.description || 'Klik untuk membuka tautan ini.',
+    title: finalTitle,
+    description: finalDesc,
     openGraph: {
-      title: data.title || 'Tautan V1Link',
-      description: data.description || 'Klik untuk membuka tautan ini.',
-      images: data.thumbnail_url ? [{ url: data.thumbnail_url }] : [],
+      title: finalTitle,
+      description: finalDesc,
+      // Ukuran 1280x720 (16:9) eksplisit agar FB Biru langsung merender gambar saat diposting
+      images: urlData.thumbnail_url ? [{ 
+        url: urlData.thumbnail_url,
+        width: 1280,
+        height: 720,
+        type: 'image/jpeg',
+        alt: finalTitle
+      }] : [],
       type: 'website',
     },
     twitter: { 
       card: 'summary_large_image',
-      title: data.title || 'Tautan V1Link',
-      description: data.description || 'Klik untuk membuka tautan ini.',
-      images: data.thumbnail_url ? [data.thumbnail_url] : [],
+      title: finalTitle,
+      description: finalDesc,
+      images: urlData.thumbnail_url ? [urlData.thumbnail_url] : [],
     }
   };
 }
 
 export default function ShortcodeLayout({ children }) {
-  // Hanya me-render isi halaman (page.js) di dalamnya
   return <>{children}</>;
 }
