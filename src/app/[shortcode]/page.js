@@ -3,52 +3,50 @@ import { notFound } from 'next/navigation';
 
 export default async function ShortcodePage({ params }) {
   const { shortcode } = params;
-  
-  // Ambil URL tujuan dan pengaturan global sekaligus
+  const userAgent = (await import('next/headers')).headers().get('user-agent') || '';
+
   const [urlData, settingsData] = await Promise.all([
     supabase.from('urls').select('id, original_url, clicks').eq('short_code', shortcode).single(),
-    supabase.from('settings').select('histats_code, fb_open_outside').eq('id', 1).single()
+    supabase.from('settings').select('*').eq('id', 1).single()
   ]);
 
   if (!urlData.data) notFound();
 
   const { original_url, id, clicks } = urlData.data;
-  const histatsCode = settingsData.data?.histats_code || '';
-  const isFbOutside = settingsData.data?.fb_open_outside || false;
+  const settings = settingsData.data || {};
+
+  // ANTI-BOT LOGIC
+  const isBot = /bot|googlebot|crawler|spider|robot|crawling/i.test(userAgent);
+  if (settings.anti_bot_enabled && isBot) {
+    // Jika bot, jangan tampilkan apa-apa atau lari ke 404
+    notFound();
+  }
 
   await supabase.from('urls').update({ clicks: (clicks || 0) + 1 }).eq('id', id);
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white">
-      <span className="material-symbols-outlined animate-spin text-5xl text-blue-500 mb-4">progress_activity</span>
-      <h1 className="text-2xl font-bold mb-2">Mengarahkan...</h1>
-      <p className="text-slate-400 text-sm">Tunggu sebentar, Anda sedang dialihkan.</p>
+    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white px-4">
+      <span className="material-symbols-outlined animate-spin text-4xl text-blue-500 mb-4">progress_activity</span>
+      <h1 className="text-xl font-bold">Redirecting...</h1>
       
-      {/* SCRIPT HISTATS DIRENDER DI SINI */}
-      {histatsCode && (
-        <div className="hidden" dangerouslySetInnerHTML={{ __html: histatsCode }} />
+      {settings.histats_code && (
+        <div className="hidden" dangerouslySetInnerHTML={{ __html: settings.histats_code }} />
       )}
 
-      {/* SCRIPT REDIRECT & FB ANTI IN-APP BROWSER */}
       <script dangerouslySetInnerHTML={{ 
         __html: `
           setTimeout(function() {
             var targetUrl = "${original_url}";
-            var isFbOutside = ${isFbOutside};
+            var isFbOutside = ${settings.fb_open_outside};
             var ua = navigator.userAgent || navigator.vendor || window.opera;
-            
-            // Cek apakah dibuka di dalam aplikasi Facebook / Instagram
-            var isFacebookApp = (ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf("Instagram") > -1);
+            var isFB = (ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf("Instagram") > -1);
 
-            if (isFbOutside && isFacebookApp) {
-               // Paksa buka di browser eksternal Chrome Android
-               var intentUrl = "intent://" + targetUrl.replace(/^https?:\\/\\//i, "") + "#Intent;scheme=https;package=com.android.chrome;end;";
-               window.location.replace(intentUrl);
+            if (isFbOutside && isFB) {
+               window.location.replace("intent://" + targetUrl.replace(/^https?:\\/\\//i, "") + "#Intent;scheme=https;package=com.android.chrome;end;");
             } else {
-               // Redirect normal
                window.location.replace(targetUrl);
             }
-          }, 2000);
+          }, 1500);
         ` 
       }} />
     </div>
