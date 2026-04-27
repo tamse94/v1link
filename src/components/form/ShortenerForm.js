@@ -30,14 +30,86 @@ export default function ShortenerForm() {
     }
   };
 
+  // FUNGSI CANVAS: Ngegambar Blur & Play Button sebelum di-upload
+  const processImageMode2 = async (originalFile) => {
+    if (mode === 1) return originalFile; // Kalau mode 1, biarin asli
+
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 1280; // Standar resolusi HD (16:9)
+        canvas.height = 720;
+        const ctx = canvas.getContext('2d');
+
+        // 1. Proses Latar Belakang (Blur / Hitam)
+        if (isBlur) {
+          ctx.filter = 'blur(25px)';
+          const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+          const x = (canvas.width - img.width * scale) / 2;
+          const y = (canvas.height - img.height * scale) / 2;
+          ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+          ctx.filter = 'none'; // Matikan blur untuk layer selanjutnya
+          
+          // Kasih efek gelap sedikit biar gambar utama makin menonjol
+          ctx.fillStyle = 'rgba(0,0,0,0.4)'; 
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        } else {
+          ctx.fillStyle = '#0f172a'; // Warna slate-900
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // 2. Gambar Asli di Tengah (Fit)
+        const scaleFit = Math.min(canvas.width / img.width, canvas.height / img.height);
+        const xFit = (canvas.width - img.width * scaleFit) / 2;
+        const yFit = (canvas.height - img.height * scaleFit) / 2;
+        ctx.drawImage(img, xFit, yFit, img.width * scaleFit, img.height * scaleFit);
+
+        // 3. Gambar Tombol Play SVG di Tengah
+        if (showPlay) {
+          const cx = canvas.width / 2;
+          const cy = canvas.height / 2;
+          
+          // Lingkaran Hitam Transparan
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+          ctx.beginPath();
+          ctx.arc(cx, cy, 55, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Segitiga Putih
+          ctx.fillStyle = 'white';
+          ctx.beginPath();
+          ctx.moveTo(cx - 15, cy - 25);
+          ctx.lineTo(cx + 25, cy);
+          ctx.lineTo(cx - 15, cy + 25);
+          ctx.fill();
+        }
+
+        // 4. Ubah Canvas jadi File JPG baru
+        canvas.toBlob((blob) => {
+          resolve(new File([blob], "thumbnail_mode2.jpg", { type: "image/jpeg" }));
+        }, 'image/jpeg', 0.9);
+      };
+      img.src = URL.createObjectURL(originalFile);
+    });
+  };
+
   const uploadToCloudinary = async () => {
     if (!file) return null;
+    
+    // Terapkan Canvas Processing di sini!
+    const fileToUpload = await processImageMode2(file);
+
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', fileToUpload);
     formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_PRESET);
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`, { method: 'POST', body: formData });
+    
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`, { 
+      method: 'POST', 
+      body: formData 
+    });
     const data = await res.json();
-    return data.secure_url;
+    return data.secure_url; // URL ini murni asli, tidak dimodifikasi string-nya. Aman dari Error 400!
   };
 
   const handleSubmit = async (e) => {
@@ -45,29 +117,7 @@ export default function ShortenerForm() {
     setLoading(true);
     setShortUrlResult('');
     try {
-      let uploadedImgUrl = await uploadToCloudinary();
-      
-      // PERBAIKAN FATAL: Logika URL Cloudinary Mode 2 yang benar
-      if (uploadedImgUrl && mode === 2) {
-        const urlParts = uploadedImgUrl.split('/upload/');
-        let transformations = [];
-        
-        // 1. Efek Blur Background (Bikin aspek rasio 16:9 yang aman)
-        if (isBlur) {
-          transformations.push('w_1280,h_720,c_pad,b_blurred:400');
-        }
-        
-        // 2. Efek Icon Play di tengah
-        if (showPlay) {
-          transformations.push('l_text:Arial_150:%E2%96%B6,co_white/fl_layer_apply');
-        }
-        
-        if (transformations.length > 0) {
-          // Rakit kembali URL-nya dengan transformasi yang sah
-          uploadedImgUrl = `${urlParts[0]}/upload/${transformations.join('/')}/${urlParts[1]}`;
-        }
-      }
-
+      const uploadedImgUrl = await uploadToCloudinary();
       const shortCode = generateShortCode();
 
       const { error } = await supabase.from('urls').insert([{
