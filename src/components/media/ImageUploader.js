@@ -8,75 +8,65 @@ export default function ImageUploader({ file, setFile, previewUrl, setPreviewUrl
   };
 
   return (
-    <div className="bg-slate-950 p-6 md:p-8 rounded-2xl border border-slate-700 w-full">
+    <div className="w-full mt-2">
+      <label className="block text-sm font-semibold text-slate-300 mb-2">Gambar Thumbnail (Opsional)</label>
       
-      {/* Tombol Upload Keren */}
-      <div className="mb-8 flex items-center justify-center w-full">
-        <label className="flex flex-col items-center justify-center w-full h-32 sm:h-40 border-2 border-slate-700 border-dashed rounded-2xl cursor-pointer bg-slate-900/50 hover:bg-slate-800 transition-colors">
-          <div className="flex flex-col items-center justify-center pt-5 pb-6">
-            <span className="material-symbols-outlined text-4xl sm:text-5xl text-slate-400 mb-2">cloud_upload</span>
-            <p className="mb-2 text-sm sm:text-base text-slate-400"><span className="font-semibold text-blue-500">Klik untuk upload</span> atau seret file ke sini</p>
-            <p className="text-xs sm:text-sm text-slate-500">PNG, JPG atau WEBP (Max. 5MB)</p>
-          </div>
-          <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
-        </label>
-      </div>
+      <input type="file" accept="image/*" onChange={handleFileChange} 
+        className="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-slate-800 file:text-slate-300 hover:file:bg-slate-700 cursor-pointer border border-slate-700 rounded-lg bg-slate-950 p-2" 
+      />
 
-      {file && <p className="text-center text-sm sm:text-base text-green-400 font-medium mb-6">File terpilih: {file.name}</p>}
-
-      <div className="flex flex-col md:flex-row gap-6 mb-6">
-        {/* Pilihan Mode Thumbnail */}
-        <div className="flex-1 bg-slate-900 p-4 sm:p-5 md:p-6 rounded-xl border border-slate-800">
-          <span className="block text-sm sm:text-base font-bold text-slate-400 mb-4">Pilih Mode Tampilan:</span>
-          <div className="flex flex-col gap-4">
-            <label className="flex items-center space-x-3 cursor-pointer group">
-              <input type="radio" checked={mode === 1} onChange={() => setMode(1)} className="w-5 h-5 text-blue-600 bg-slate-800 border-slate-600 focus:ring-blue-500 focus:ring-2" />
-              <span className="text-sm sm:text-base text-slate-300 group-hover:text-white font-medium transition-colors">Mode 1 (Biasa/Normal)</span>
+      <div className="mt-5 flex flex-col sm:flex-row gap-4">
+        <div className="flex-1">
+          <label className="block text-sm text-slate-400 mb-2">Tipe Tampilan Gambar</label>
+          <div className="flex gap-4">
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input type="radio" checked={mode === 1} onChange={() => setMode(1)} className="w-4 h-4 text-blue-600 bg-slate-900 border-slate-700" />
+              <span className="text-sm text-slate-300">Normal</span>
             </label>
-            <label className="flex items-center space-x-3 cursor-pointer group">
-              <input type="radio" checked={mode === 2} onChange={() => setMode(2)} className="w-5 h-5 text-blue-600 bg-slate-800 border-slate-600 focus:ring-blue-500 focus:ring-2" />
-              <span className="text-sm sm:text-base text-slate-300 group-hover:text-white font-medium transition-colors">Mode 2 (Efek Blur Kanan-Kiri)</span>
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input type="radio" checked={mode === 2} onChange={() => setMode(2)} className="w-4 h-4 text-blue-600 bg-slate-900 border-slate-700" />
+              <span className="text-sm text-slate-300">Efek Video (Blur & Play)</span>
             </label>
           </div>
         </div>
 
-        {/* Setting Khusus Mode 2 (Pake Google Icons) */}
         {mode === 2 && (
-          <div className="flex-1 bg-slate-900 p-4 sm:p-5 md:p-6 rounded-xl border border-slate-800 flex flex-col justify-center gap-3 sm:gap-4">
-             <span className="block text-sm sm:text-base font-bold text-slate-400 mb-1">Pengaturan Tambahan:</span>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              
-              <button type="button" onClick={() => setIsBlur(!isBlur)} 
-                className={`flex-1 py-3 flex items-center justify-center gap-2 rounded-lg text-sm sm:text-base font-bold transition-all border ${isBlur ? 'bg-blue-600/20 text-blue-400 border-blue-500/50' : 'bg-slate-800 text-slate-400 border-slate-700'}`}>
-                <span className="material-symbols-outlined text-2xl">{isBlur ? 'toggle_on' : 'toggle_off'}</span>
-                Blur {isBlur ? 'ON' : 'OFF'}
+          <div className="flex-1">
+             <label className="block text-sm text-slate-400 mb-2">Pengaturan Efek Video</label>
+             <div className="flex gap-2">
+              <button type="button" onClick={() => setIsBlur(!isBlur)} className={`px-3 py-1.5 rounded-md text-xs font-semibold ${isBlur ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400'}`}>
+                Latar Blur: {isBlur ? 'Nyala' : 'Mati'}
               </button>
-
-              <button type="button" onClick={() => setShowPlay(!showPlay)} 
-                className={`flex-1 py-3 flex items-center justify-center gap-2 rounded-lg text-sm sm:text-base font-bold transition-all border ${showPlay ? 'bg-blue-600/20 text-blue-400 border-blue-500/50' : 'bg-slate-800 text-slate-400 border-slate-700'}`}>
-                <span className="material-symbols-outlined text-2xl">{showPlay ? 'toggle_on' : 'toggle_off'}</span>
-                Play {showPlay ? 'ON' : 'OFF'}
+              <button type="button" onClick={() => setShowPlay(!showPlay)} className={`px-3 py-1.5 rounded-md text-xs font-semibold ${showPlay ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400'}`}>
+                Tombol Play: {showPlay ? 'Nyala' : 'Mati'}
               </button>
-
             </div>
           </div>
         )}
       </div>
 
-      {/* Preview Gambar Area */}
       {previewUrl && (
-        <div className="mt-8">
-          <span className="block text-sm sm:text-base font-bold text-slate-400 mb-4 text-center">Live Preview:</span>
-          <div className="w-full max-w-2xl mx-auto aspect-video relative overflow-hidden bg-black rounded-xl border-2 border-slate-700 flex items-center justify-center shadow-2xl">
+        <div className="mt-6">
+          <span className="block text-sm text-slate-400 mb-2">Pratinjau Gambar:</span>
+          {/* Container gambar, blur-md agar background masih terlihat bentuknya */}
+          <div className="w-full max-w-lg mx-auto aspect-video relative overflow-hidden bg-black rounded-lg border border-slate-700 flex items-center justify-center">
+            
             {mode === 2 && isBlur && (
-              <img src={previewUrl} className="absolute inset-0 w-full h-full object-cover opacity-60 blur-xl scale-125" alt="blur-bg" />
+              <img src={previewUrl} className="absolute inset-0 w-full h-full object-cover opacity-70 blur-md scale-110" alt="blur-bg" />
             )}
-            <img src={previewUrl} className="relative z-10 h-full object-contain drop-shadow-2xl" alt="preview" />
+            
+            <img src={previewUrl} className="relative z-10 h-full object-contain" alt="preview" />
+            
             {mode === 2 && showPlay && (
-              <div className="absolute z-20 bg-black/60 rounded-full p-3 sm:p-4 md:p-5 backdrop-blur-sm border border-white/10 shadow-xl">
-                <span className="material-symbols-outlined text-white text-4xl sm:text-5xl md:text-6xl pl-1 sm:pl-2">play_arrow</span>
+              <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                <div className="bg-black/60 rounded-full w-14 h-14 flex items-center justify-center backdrop-blur-sm border border-white/20 pl-1">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </div>
               </div>
             )}
+            
           </div>
         </div>
       )}
