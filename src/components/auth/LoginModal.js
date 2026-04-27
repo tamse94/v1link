@@ -37,7 +37,7 @@ export default function LoginModal({ onLoginSuccess }) {
         setError('Invalid credentials. Please check your Vercel settings and redeploy.');
         setLoading(false);
       }
-    }, 800;
+    }, 800); // <--- INI YANG TADI TYPO, UDAH DIBENERIN PAKAI KURUNG TUTUP
   };
 
   return (
