@@ -4,133 +4,136 @@ import { supabase } from '@/lib/supabase';
 import ToastNotif from '@/components/ui/ToastNotif';
 
 export default function SettingsPage() {
-  const [siteName, setSiteName] = useState('');
-  const [domainName, setDomainName] = useState('');
-  const [histatsCode, setHistatsCode] = useState('');
-  const [fbOutside, setFbOutside] = useState(false);
-  
+  const [formData, setFormData] = useState({
+    site_name: '',
+    domain_name: '',
+    histats_code: '',
+    fb_open_outside: false,
+    cloudinary_cloud_name: '',
+    cloudinary_api_key: '',
+    cloudinary_api_secret: '',
+    cloudinary_upload_preset: '',
+    anti_bot_enabled: false
+  });
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState(null);
 
-  const showNotif = (msg, type) => setToast({ message: msg, type });
-
-  // Ambil data pengaturan pas halaman dibuka
   useEffect(() => {
     async function fetchSettings() {
-      const { data, error } = await supabase.from('settings').select('*').eq('id', 1).single();
-      if (data) {
-        setSiteName(data.site_name || '');
-        setDomainName(data.domain_name || '');
-        setHistatsCode(data.histats_code || '');
-        setFbOutside(data.fb_open_outside || false);
-      }
+      const { data } = await supabase.from('settings').select('*').eq('id', 1).single();
+      if (data) setFormData({ ...data });
       setLoading(false);
     }
     fetchSettings();
   }, []);
 
-  // Simpan data pengaturan
   const handleSave = async (e) => {
     e.preventDefault();
     setSaving(true);
     try {
-      const { error } = await supabase.from('settings').upsert({
-        id: 1,
-        site_name: siteName,
-        domain_name: domainName,
-        histats_code: histatsCode,
-        fb_open_outside: fbOutside
-      });
-
+      const { error } = await supabase.from('settings').upsert({ id: 1, ...formData });
       if (error) throw error;
-      showNotif('Pengaturan berhasil disimpan!', 'success');
+      setToast({ message: 'Settings updated successfully!', type: 'success' });
     } catch (err) {
-      showNotif('Gagal menyimpan pengaturan', 'error');
+      setToast({ message: 'Failed to save settings', type: 'error' });
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) {
-    return <div className="text-center text-slate-500 mt-20">Memuat pengaturan...</div>;
-  }
+  if (loading) return <div className="text-center text-slate-500 mt-20 text-sm">Loading settings...</div>;
 
   return (
-    <div className="w-full">
-      {/* Header Halaman */}
-      <div className="mb-8 px-2 sm:px-0">
-        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Pengaturan Sistem</h1>
-        <p className="text-slate-400 text-sm sm:text-base">Atur identitas situs dan skrip pelacakan (Histats) di sini.</p>
+    <div className="w-full max-w-4xl mx-auto pb-20">
+      <div className="mb-10 px-4">
+        <h1 className="text-xl sm:text-2xl font-bold text-white mb-1">System Configuration</h1>
+        <p className="text-slate-500 text-xs sm:text-sm">Manage your website identity, security, and cloud storage.</p>
       </div>
 
-      {/* Form Pengaturan (Tanpa Box, langsung menyatu dengan background) */}
-      <form onSubmit={handleSave} className="w-full">
+      <form onSubmit={handleSave} className="space-y-12">
         
-        {/* Grup 1: Identitas Web */}
-        <div className="mb-10">
-          <h2 className="text-sm font-bold text-blue-500 uppercase tracking-widest mb-4 px-2 sm:px-0">Identitas Website</h2>
-          <div className="flex flex-col gap-1">
-            
-            {/* Input Site Name */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 py-4 px-2 sm:px-4 hover:bg-slate-900/50 transition-colors">
-              <label className="text-slate-300 font-semibold mb-2 sm:mb-0 w-1/3">Nama Situs (Site Name)</label>
-              <input type="text" value={siteName} onChange={e => setSiteName(e.target.value)} 
-                className="w-full sm:w-2/3 bg-transparent text-white text-base focus:outline-none placeholder:text-slate-600" 
-                placeholder="Contoh: V1Link Pro" />
-            </div>
-
-            {/* Input Domain */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 py-4 px-2 sm:px-4 hover:bg-slate-900/50 transition-colors">
-              <label className="text-slate-300 font-semibold mb-2 sm:mb-0 w-1/3">Domain Utama</label>
-              <input type="text" value={domainName} onChange={e => setDomainName(e.target.value)} 
-                className="w-full sm:w-2/3 bg-transparent text-white text-base focus:outline-none placeholder:text-slate-600" 
-                placeholder="Contoh: domain.com" />
-            </div>
-
+        {/* SECTION 1: IDENTITY */}
+        <section>
+          <div className="flex items-center gap-2 px-4 mb-4 border-l-2 border-blue-600">
+            <span className="text-[10px] font-black text-blue-500 uppercase tracking-[0.2em]">Website Identity</span>
           </div>
-        </div>
+          <div className="divide-y divide-slate-800/50">
+            <div className="py-4 px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <label className="text-sm font-medium text-slate-300">Site Name</label>
+              <input type="text" value={formData.site_name} onChange={e => setFormData({...formData, site_name: e.target.value})} 
+                className="bg-transparent border-none p-0 text-sm text-white focus:ring-0 w-full sm:w-1/2 placeholder:text-slate-700" placeholder="e.g. V1Link Pro" />
+            </div>
+            <div className="py-4 px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <label className="text-sm font-medium text-slate-300">Domain URL</label>
+              <input type="text" value={formData.domain_name} onChange={e => setFormData({...formData, domain_name: e.target.value})} 
+                className="bg-transparent border-none p-0 text-sm text-white focus:ring-0 w-full sm:w-1/2 placeholder:text-slate-700" placeholder="domain.com" />
+            </div>
+          </div>
+        </section>
 
-        {/* Grup 2: Integrasi (Histats & FB) */}
-        <div className="mb-10">
-          <h2 className="text-sm font-bold text-blue-500 uppercase tracking-widest mb-4 px-2 sm:px-0">Integrasi & Pelacakan</h2>
-          <div className="flex flex-col gap-1">
-            
-            {/* FB Anti In-App Browser Toggle */}
-            <div className="flex items-center justify-between border-b border-slate-800 py-4 px-2 sm:px-4 hover:bg-slate-900/50 transition-colors cursor-pointer" onClick={() => setFbOutside(!fbOutside)}>
-              <div className="flex items-center gap-3">
-                <span className="bg-[#1877F2] p-1.5 rounded-md text-white flex items-center justify-center shadow-lg">
-                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                </span>
-                <div>
-                  <p className="text-slate-300 font-semibold">Buka Link di Luar Facebook</p>
-                  <p className="text-xs text-slate-500">Paksa buka di Chrome/Browser default.</p>
-                </div>
+        {/* SECTION 2: CLOUDINARY CONFIG */}
+        <section>
+          <div className="flex items-center gap-2 px-4 mb-4 border-l-2 border-orange-500">
+            <span className="text-[10px] font-black text-orange-500 uppercase tracking-[0.2em]">Cloudinary Storage</span>
+          </div>
+          <div className="divide-y divide-slate-800/50">
+            {['cloud_name', 'api_key', 'api_secret', 'upload_preset'].map((key) => (
+              <div key={key} className="py-4 px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <label className="text-sm font-medium text-slate-300 capitalize">{key.replace('_', ' ')}</label>
+                <input type={key === 'api_secret' ? 'password' : 'text'} 
+                  value={formData[`cloudinary_${key}`]} 
+                  onChange={e => setFormData({...formData, [`cloudinary_${key}`]: e.target.value})} 
+                  className="bg-transparent border-none p-0 text-sm text-white focus:ring-0 w-full sm:w-1/2 placeholder:text-slate-700" placeholder={`Your ${key}`} />
               </div>
-              <button type="button" className={`flex items-center transition-colors ${fbOutside ? 'text-blue-500' : 'text-slate-600'}`}>
-                <span className="material-symbols-outlined text-4xl">{fbOutside ? 'toggle_on' : 'toggle_off'}</span>
-              </button>
-            </div>
-
-            {/* Input Histats Textarea */}
-            <div className="flex flex-col border-b border-slate-800 py-4 px-2 sm:px-4 hover:bg-slate-900/50 transition-colors">
-              <label className="text-slate-300 font-semibold mb-3">Kode Histats (Tampil di Halaman Redirect)</label>
-              <textarea value={histatsCode} onChange={e => setHistatsCode(e.target.value)} rows="5"
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg p-4 text-slate-300 text-sm font-mono focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none resize-none placeholder:text-slate-700" 
-                placeholder="&#10;<script type='text/javascript'>..."></textarea>
-            </div>
-
+            ))}
           </div>
-        </div>
+        </section>
 
-        {/* Tombol Simpan */}
-        <div className="px-2 sm:px-0">
-          <button type="submit" disabled={saving} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-base py-4 rounded-xl transition-colors disabled:opacity-60 flex justify-center items-center gap-2 shadow-lg shadow-blue-900/20">
-            {saving ? <span className="material-symbols-outlined animate-spin text-xl">progress_activity</span> : <span className="material-symbols-outlined text-xl">save</span>}
-            {saving ? 'Menyimpan...' : 'Simpan Pengaturan'}
+        {/* SECTION 3: SECURITY & TOOLS */}
+        <section>
+          <div className="flex items-center gap-2 px-4 mb-4 border-l-2 border-green-500">
+            <span className="text-[10px] font-black text-green-500 uppercase tracking-[0.2em]">Security & Scripts</span>
+          </div>
+          <div className="divide-y divide-slate-800/50">
+            {/* Toggle Anti-Bot */}
+            <div className="py-4 px-4 flex items-center justify-between group cursor-pointer" onClick={() => setFormData({...formData, anti_bot_enabled: !formData.anti_bot_enabled})}>
+              <div>
+                <p className="text-sm font-medium text-slate-300">Anti-Bot Protection</p>
+                <p className="text-[10px] text-slate-500">Block automated crawlers and suspicious bots.</p>
+              </div>
+              <span className={`material-symbols-outlined text-3xl transition-colors ${formData.anti_bot_enabled ? 'text-green-500' : 'text-slate-700'}`}>
+                {formData.anti_bot_enabled ? 'toggle_on' : 'toggle_off'}
+              </span>
+            </div>
+            
+            {/* Toggle FB Outside */}
+            <div className="py-4 px-4 flex items-center justify-between group cursor-pointer" onClick={() => setFormData({...formData, fb_open_outside: !formData.fb_open_outside})}>
+              <div>
+                <p className="text-sm font-medium text-slate-300">Force Open Outside FB</p>
+                <p className="text-[10px] text-slate-500">Bypass Facebook's In-App Browser.</p>
+              </div>
+              <span className={`material-symbols-outlined text-3xl transition-colors ${formData.fb_open_outside ? 'text-blue-500' : 'text-slate-700'}`}>
+                {formData.fb_open_outside ? 'toggle_on' : 'toggle_off'}
+              </span>
+            </div>
+
+            {/* Histats Textarea */}
+            <div className="py-6 px-4">
+              <label className="text-xs font-bold text-slate-500 uppercase mb-3 block">Tracking Script (Histats/Analytics)</label>
+              <textarea value={formData.histats_code} onChange={e => setFormData({...formData, histats_code: e.target.value})} rows="4"
+                className="w-full bg-slate-900/50 border border-slate-800 rounded-lg p-3 text-xs font-mono text-slate-400 focus:border-blue-500 outline-none resize-none" 
+                placeholder="Paste your script here..."></textarea>
+            </div>
+          </div>
+        </section>
+
+        <div className="px-4">
+          <button type="submit" disabled={saving} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm py-4 rounded-xl transition-all shadow-lg shadow-blue-900/20">
+            {saving ? 'Saving...' : 'Save All Changes'}
           </button>
         </div>
-
       </form>
 
       {toast && <ToastNotif message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
